@@ -7,7 +7,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include "../../libraries/SensorLib/src/touch/TouchDrvCST816.hpp"
+#include "../../../libraries/SensorLib/src/touch/TouchDrvCST816.hpp"
 #include "pin_config.h"
 
 namespace Board21B {
