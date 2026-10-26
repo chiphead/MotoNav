@@ -31,3 +31,16 @@ See `pin_config.h` for the board-specific pin constants and source comments. The
 - [ ] Validate on physical hardware.
 
 The display and touch helpers are intentionally isolated and are not yet included by `MotoNav.ino`; the 21b target remains non-buildable until API compatibility, rendering/buffer sizing and the dedicated build script are addressed. No compile or physical-device test has been performed. Do not flash a 1.75 or 1.85B image onto the 2.1B board.
+
+
+## Isolated hardware bring-up sketch
+
+Added `firmware/boards/21b/bringup/bringup.ino` to test the RGB display and CST820 touch path separately from the large MotoNav application. It initializes TCA9554, creates the ST7701/RGB display, draws color bands and concentric circles, then logs touch coordinates to Serial at 115200 baud.
+
+Suggested test sequence once compiled and flashed:
+1. Confirm serial output reports TCA9554 success (otherwise it stops with an error).
+2. Check the display shows distinct red/green/blue/white/yellow/magenta/cyan bands and the center circles.
+3. Touch several points and check that serial coordinates vary from near 0 to near 479 in both axes.
+4. Record any rotation/mirroring discrepancy before porting MotoNav's touch gestures.
+
+**Validation status:** this is a source-level test sketch only. It has not been compiled or flashed; the ST7701 init sequence, RGB timings, expander CS behavior, color order and touch orientation remain unverified on the physical board.
