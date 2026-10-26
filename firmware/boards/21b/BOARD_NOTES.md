@@ -44,3 +44,16 @@ Suggested test sequence once compiled and flashed:
 4. Record any rotation/mirroring discrepancy before porting MotoNav's touch gestures.
 
 **Validation status:** this is a source-level test sketch only. It has not been compiled or flashed; the ST7701 init sequence, RGB timings, expander CS behavior, color order and touch orientation remain unverified on the physical board.
+
+
+## Build entry point for the isolated test
+
+A dedicated PowerShell wrapper is available at `firmware/build-21b-bringup.ps1`. From the repository's `firmware` directory on Windows, run:
+
+```powershell
+.\build-21b-bringup.ps1
+```
+
+If Arduino CLI is not on PATH, pass its full path with `-CliPath`; if the installation uses a non-default config, pass `-ConfigFile`. The script uses the same ESP32-S3 FQBN, 16 MB flash, OPI PSRAM, partition scheme and vendored libraries as the existing build script. It only compiles the bring-up sketch and does not package a MotoNav release.
+
+**Important:** no compile was run by the authoring environment. A successful local run is still required before treating the adapter code as compile-validated.
