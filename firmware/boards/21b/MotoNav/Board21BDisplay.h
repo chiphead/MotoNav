@@ -36,13 +36,18 @@ inline bool writeTcaRegister(uint8_t reg, uint8_t value) {
 inline bool initExpander() {
   Wire.begin(IIC_SDA, IIC_SCL, 100000);
   delay(20);
-  expanderOutputState = EXIO_TP_RST_MASK | EXIO_LCD_CS_MASK | EXIO_SD_CS_MASK; // LCD reset asserted
+  // Start with both controllers held in reset; keep both chip-selects high.
+  expanderOutputState = EXIO_LCD_CS_MASK | EXIO_SD_CS_MASK;
   if (!writeTcaRegister(TCA_REG_OUTPUT, expanderOutputState)) return false;
   if (!writeTcaRegister(TCA_REG_CONFIG, static_cast<uint8_t>(~EXPANDER_OUTPUT_MASK))) return false;
   delay(10);
+  // Release LCD reset, then release touch reset after its own low pulse.
   expanderOutputState |= EXIO_LCD_RST_MASK;
   if (!writeTcaRegister(TCA_REG_OUTPUT, expanderOutputState)) return false;
   delay(100);
+  expanderOutputState |= EXIO_TP_RST_MASK;
+  if (!writeTcaRegister(TCA_REG_OUTPUT, expanderOutputState)) return false;
+  delay(50);
   return true;
 }
 
