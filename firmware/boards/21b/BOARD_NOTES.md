@@ -57,3 +57,15 @@ A dedicated PowerShell wrapper is available at `firmware/build-21b-bringup.ps1`.
 If Arduino CLI is not on PATH, pass its full path with `-CliPath`; if the installation uses a non-default config, pass `-ConfigFile`. The script uses the same ESP32-S3 FQBN, 16 MB flash, OPI PSRAM, partition scheme and vendored libraries as the existing build script. It only compiles the bring-up sketch and does not package a MotoNav release.
 
 **Important:** no compile was run by the authoring environment. A successful local run is still required before treating the adapter code as compile-validated.
+
+
+## Follow-up source review (not a compile result)
+
+Compared the adapter against the repository's vendored Arduino_GFX API and a separate public implementation of the same Waveshare 2.1-inch board:
+
+- The RGB panel constructor argument order matches the vendored `Arduino_ESP32RGBPanel` declaration. The adapter keeps the 480x480, 16-bit RGB bus at a conservative 16 MHz pixel clock with a 480x10-pixel bounce buffer.
+- The display's ST7701S command/data bus is 9-bit software SPI on GPIO2/GPIO1, while chip-select is controlled through TCA9554 EXIO3. This matches the board's documented split between RGB pixel transfer and the boot-time serial initialization bus. The SD card shares GPIO1/GPIO2 and uses EXIO4 as its chip-select; the bring-up sketch intentionally does not initialize SD.
+- The TCA9554 setup now explicitly clears its polarity-inversion register before configuring only LCD reset, touch reset, LCD CS and SD CS as outputs. EXIO8 (the active-high buzzer) remains an input, avoiding an accidental continuous tone.
+- RGB sync polarity is set to active-low explicitly. If the first hardware test shows a blank or unstable image, timing polarity/porches and the ST7701S sequence remain items to compare against the exact board revision; these settings have not been measured on the target device.
+
+The reference used for the board wiring is Waveshare's [ESP32-S3-Touch-LCD-2.1 wiki](https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-2.1). A separate implementation with the same 480x480 ST7701S/CST820/TCA9554 hardware is available at [murr2k/esp32-s3-touch-lcd-2.1](https://github.com/murr2k/esp32-s3-touch-lcd-2.1). Neither reference proves that this Arduino_GFX adapter compiles or runs unchanged.
