@@ -22,6 +22,7 @@ constexpr uint8_t EXIO_LCD_CS_MASK = 1u << (BOARD_EXIO_LCD_CS - 1);
 constexpr uint8_t EXIO_SD_CS_MASK = 1u << 3; // EXIO4: SD card shares GPIO1/GPIO2
 constexpr uint8_t EXPANDER_OUTPUT_MASK =
     EXIO_LCD_RST_MASK | EXIO_TP_RST_MASK | EXIO_LCD_CS_MASK | EXIO_SD_CS_MASK;
+inline uint8_t expanderOutputState = 0;
 
 inline bool writeTcaRegister(uint8_t reg, uint8_t value) {
   Wire.beginTransmission(TCA9554_I2C_ADDR);
@@ -35,11 +36,12 @@ inline bool writeTcaRegister(uint8_t reg, uint8_t value) {
 inline bool initExpander() {
   Wire.begin(IIC_SDA, IIC_SCL, 100000);
   delay(20);
-  const uint8_t outputs = EXIO_TP_RST_MASK | EXIO_LCD_CS_MASK | EXIO_SD_CS_MASK;
-  if (!writeTcaRegister(TCA_REG_OUTPUT, outputs)) return false; // LCD held in reset
+  expanderOutputState = EXIO_TP_RST_MASK | EXIO_LCD_CS_MASK | EXIO_SD_CS_MASK; // LCD reset asserted
+  if (!writeTcaRegister(TCA_REG_OUTPUT, expanderOutputState)) return false;
   if (!writeTcaRegister(TCA_REG_CONFIG, static_cast<uint8_t>(~EXPANDER_OUTPUT_MASK))) return false;
   delay(10);
-  if (!writeTcaRegister(TCA_REG_OUTPUT, static_cast<uint8_t>(outputs | EXIO_LCD_RST_MASK))) return false;
+  expanderOutputState |= EXIO_LCD_RST_MASK;
+  if (!writeTcaRegister(TCA_REG_OUTPUT, expanderOutputState)) return false;
   delay(100);
   return true;
 }
@@ -52,14 +54,15 @@ class ExpanderCsSWSPI final : public Arduino_SWSPI {
       : Arduino_SWSPI(GFX_NOT_DEFINED, GFX_NOT_DEFINED, LCD_SCLK, LCD_SDA) {}
 
   void beginWrite() override {
-    writeTcaRegister(TCA_REG_OUTPUT, static_cast<uint8_t>(EXIO_TP_RST_MASK | EXIO_SD_CS_MASK));
+    expanderOutputState &= static_cast<uint8_t>(~EXIO_LCD_CS_MASK);
+    writeTcaRegister(TCA_REG_OUTPUT, expanderOutputState);
     Arduino_SWSPI::beginWrite();
   }
 
   void endWrite() override {
     Arduino_SWSPI::endWrite();
-    writeTcaRegister(TCA_REG_OUTPUT, static_cast<uint8_t>(
-        EXIO_TP_RST_MASK | EXIO_LCD_CS_MASK | EXIO_SD_CS_MASK | EXIO_LCD_RST_MASK));
+    expanderOutputState |= EXIO_LCD_CS_MASK;
+    writeTcaRegister(TCA_REG_OUTPUT, expanderOutputState);
   }
 };
 
