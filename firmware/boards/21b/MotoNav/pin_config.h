@@ -24,22 +24,22 @@
 #define LCD_HSYNC 38
 
 // RGB565 data pins, in red/green/blue channel order.
-#define LCD_R0 46
-#define LCD_R1 3
-#define LCD_R2 8
-#define LCD_R3 18
-#define LCD_R4 17
+#define LCD_R1 46
+#define LCD_R2 3
+#define LCD_R3 8
+#define LCD_R4 18
+#define LCD_R5 17
 #define LCD_G0 14
 #define LCD_G1 13
 #define LCD_G2 12
 #define LCD_G3 11
 #define LCD_G4 10
 #define LCD_G5 9
-#define LCD_B0 5
-#define LCD_B1 45
-#define LCD_B2 48
-#define LCD_B3 47
-#define LCD_B4 21
+#define LCD_B1 5
+#define LCD_B2 45
+#define LCD_B3 48
+#define LCD_B4 47
+#define LCD_B5 21
 
 // CST820 touch controller (shares the board I2C bus with TCA9554/RTC/IMU).
 #define IIC_SDA 15
