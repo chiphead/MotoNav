@@ -21,7 +21,8 @@ See `pin_config.h` for the board-specific pin constants and source comments. The
 - [x] Add an isolated ST7701S init/RGB construction scaffold in `MotoNav/Board21BDisplay.h`, based on a separate open-source implementation of the same Waveshare board. It includes the vendor init command table and RGB timing/pin arguments.
 - [x] Add a safe-startup scaffold for TCA9554 LCD reset, touch reset, LCD CS and SD CS. The helper intentionally leaves unused expander pins as inputs to avoid enabling the active-high buzzer.
 - [ ] Review the scaffold against the exact Arduino_GFX revision vendored in this repository; constructor and batch-operation API compatibility is not yet verified.
-- [ ] Verify expander CS transitions and panel init on hardware; the serial bus is 9-bit and only CS is routed through TCA9554.
+- [ ] Verify expander CS transitions and panel init on hardware. The LCD command bus uses 9-bit serial transactions; CS is routed through TCA9554 while SCL/SDA are direct GPIOs.
+- [ ] Integrate rendering without assuming `Arduino_RGB_Display` behaves like the existing QSPI panel. It owns a 480x480 RGB framebuffer; retaining the 466x466 `Arduino_Canvas` and MotoNav double buffer adds more PSRAM usage and needs measured refresh/tearing tests.
 - [x] Add an isolated `Board21BTouch.h` adapter using the repository-vendored SensorLib CST816-family driver, which recognizes the CST820 chip ID. It keeps reset on TCA9554 EXIO2 and uses GPIO16 as touch interrupt.
 - [ ] Verify touch init, coordinate orientation and tap/swipe behavior on the actual panel.
 - [ ] Adapt MotoNav rendering and buffering for 480x480 RGB panel.
