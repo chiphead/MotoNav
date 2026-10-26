@@ -18,12 +18,14 @@ See `pin_config.h` for the board-specific pin constants and source comments. The
 
 - [x] Isolated port branch and documented target architecture.
 - [x] Added the 2.1B-specific pin map.
-- [ ] Implement ST7701S serial initialization and RGB panel setup.
-- [ ] Implement safe TCA9554 startup ordering for LCD reset, touch reset, chip-select and buzzer idle state.
+- [x] Add an isolated ST7701S init/RGB construction scaffold in `MotoNav/Board21BDisplay.h`, based on a separate open-source implementation of the same Waveshare board. It includes the vendor init command table and RGB timing/pin arguments.
+- [x] Add a safe-startup scaffold for TCA9554 LCD reset, touch reset, LCD CS and SD CS. The helper intentionally leaves unused expander pins as inputs to avoid enabling the active-high buzzer.
+- [ ] Review the scaffold against the exact Arduino_GFX revision vendored in this repository; constructor and batch-operation API compatibility is not yet verified.
+- [ ] Verify expander CS transitions and panel init on hardware; the serial bus is 9-bit and only CS is routed through TCA9554.
 - [ ] Integrate CST820 input and 480x480 touch coordinate handling.
 - [ ] Adapt MotoNav rendering and buffering for 480x480 RGB panel.
 - [ ] Add a separate build target only after the board driver is integrated.
 - [ ] Compile with the project's pinned Arduino/ESP32 toolchain.
 - [ ] Validate on physical hardware.
 
-This branch does not yet contain a flashable 2.1B firmware. Do not flash a 1.75 or 1.85B image onto the 2.1B board.
+The new display helper is intentionally isolated and is not yet included by `MotoNav.ino`; the 21b target remains non-buildable until library API compatibility, touch integration, rendering/buffer sizing and the dedicated build script are addressed. No compile or physical-device test has been performed. Do not flash a 1.75 or 1.85B image onto the 2.1B board.
