@@ -15,6 +15,7 @@
 namespace Board21B {
 
 constexpr uint8_t TCA_REG_OUTPUT = 0x01;
+constexpr uint8_t TCA_REG_POLARITY = 0x02;
 constexpr uint8_t TCA_REG_CONFIG = 0x03;
 constexpr uint8_t EXIO_LCD_RST_MASK = 1u << (BOARD_EXIO_LCD_RESET - 1);
 constexpr uint8_t EXIO_TP_RST_MASK = 1u << (BOARD_EXIO_TOUCH_RESET - 1);
@@ -39,6 +40,9 @@ inline bool initExpander() {
   // Start with both controllers held in reset; keep both chip-selects high.
   expanderOutputState = EXIO_LCD_CS_MASK | EXIO_SD_CS_MASK;
   if (!writeTcaRegister(TCA_REG_OUTPUT, expanderOutputState)) return false;
+  // Force non-inverted expander inputs/outputs rather than relying on the
+  // chip's power-on default or a previous sketch's register state.
+  if (!writeTcaRegister(TCA_REG_POLARITY, 0x00)) return false;
   if (!writeTcaRegister(TCA_REG_CONFIG, static_cast<uint8_t>(~EXPANDER_OUTPUT_MASK))) return false;
   delay(10);
   // Release LCD reset, then release touch reset after its own low pulse.
@@ -129,8 +133,8 @@ inline Arduino_ESP32RGBPanel* createRgbPanel() {
       LCD_R1, LCD_R2, LCD_R3, LCD_R4, LCD_R5,
       LCD_G0, LCD_G1, LCD_G2, LCD_G3, LCD_G4, LCD_G5,
       LCD_B1, LCD_B2, LCD_B3, LCD_B4, LCD_B5,
-      1, 50, 8, 10,  // HSYNC polarity, front porch, pulse width, back porch
-      1, 8, 3, 8,    // VSYNC polarity, front porch, pulse width, back porch
+      0, 50, 8, 10,  // HSYNC active-low, front porch, pulse width, back porch
+      0, 8, 3, 8,    // VSYNC active-low, front porch, pulse width, back porch
       0, pixelClockHz, false, 0, 0, bounceBufferPixels);
 }
 
