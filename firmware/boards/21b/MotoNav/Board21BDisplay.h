@@ -116,7 +116,9 @@ inline const uint8_t st7701Init[] = {
     WRITE_C8_D8, 0xEF, 0x08,
     WRITE_COMMAND_8, 0xFF, WRITE_BYTES, 5, 0x77, 0x01, 0x00, 0x00, 0x00,
     WRITE_C8_D8, 0x36, 0x00,
-    WRITE_C8_D8, 0x3A, 0x66,
+    // RGB bus is physically 5R + 6G + 5B (16-bit RGB565), so
+    // select 16-bit/pixel rather than ST7701's 18-bit RGB666 mode.
+    WRITE_C8_D8, 0x3A, 0x55,
     WRITE_COMMAND_8, 0x11,
     DELAY, 240, DELAY, 240,
     WRITE_COMMAND_8, 0x20,
