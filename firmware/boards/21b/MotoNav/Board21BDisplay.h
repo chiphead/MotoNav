@@ -133,8 +133,8 @@ inline Arduino_ESP32RGBPanel* createRgbPanel() {
       LCD_R1, LCD_R2, LCD_R3, LCD_R4, LCD_R5,
       LCD_G0, LCD_G1, LCD_G2, LCD_G3, LCD_G4, LCD_G5,
       LCD_B1, LCD_B2, LCD_B3, LCD_B4, LCD_B5,
-      0, 50, 8, 10,  // HSYNC active-low, front porch, pulse width, back porch
-      0, 8, 3, 8,    // VSYNC active-low, front porch, pulse width, back porch
+      0, 10, 8, 50, // HSYNC active-low, front porch, pulse width, back porch
+      0, 3, 8, 8,   // VSYNC active-low, front porch, pulse width, back porch
       0, pixelClockHz, false, 0, 0, bounceBufferPixels);
 }
 
