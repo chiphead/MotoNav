@@ -57,7 +57,21 @@
 #define BOARD_EXIO_LCD_RESET 1
 #define BOARD_EXIO_TOUCH_RESET 2
 #define BOARD_EXIO_LCD_CS 3
+#define BOARD_EXIO_SD_CS 4
+#define BOARD_EXIO_IMU_INT2 5
+#define BOARD_EXIO_IMU_INT1 6
+#define BOARD_EXIO_RTC_INT 7
 #define BOARD_EXIO_BUZZER 8
+
+// microSD: shared SPI clock/data pins are GPIO2/GPIO1; chip select is EXIO4.
+// SD_D1 and SD_D2 are not connected on this board.
+#define SDMMC_CLK 2
+#define SDMMC_CMD 1
+#define SDMMC_DATA 42
+#define SDMMC_CS_EXIO 4
+
+// Battery voltage sense.
+#define BAT_ADC 4
 
 // The 2.1B board has no 1.75-style ES8311 audio path. Do not copy the
 // 1.75 I2S/PA pin definitions into this board configuration.
