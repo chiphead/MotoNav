@@ -80,3 +80,27 @@ The BLE protocol, map rendering, media/HID behavior, and most application logic 
 - Firmware implementation: not yet started.
 - Arduino compile: not run.
 - Hardware validation: not run.
+
+
+## Reference implementation audit (2026-11-01)
+
+A public Arduino/PlatformIO template for the exact 2.1-inch Waveshare board was inspected as a secondary implementation reference:
+`saranyim/Template_waveshare_ESP32_S3_Touch_LCD_2.1` (not a first-party Waveshare source and not yet validated on this MotoNav fork).
+
+Useful implementation findings from that reference:
+
+- ST7701 command transport is a separate 3-wire/9-bit SPI path on GPIO2 (clock) and GPIO1 (MOSI); the panel RGB pixel stream uses the 16 data GPIOs plus PCLK/DE/HSYNC/VSYNC. It is not a normal SPI display.
+- TCA9554 is at I2C address 0x20. Its EXIO1 controls panel reset, EXIO2 controls CST820 reset, and EXIO3 controls ST7701 command-interface CS. The reference uses EXIO numbers as 1-based pin identifiers.
+- CST820 uses I2C address 0x15, SDA GPIO15, SCL GPIO7, and interrupt GPIO16. Its reset is performed through TCA9554 EXIO2.
+- Reference RGB timing values are 16 MHz PCLK, H pulse/back/front porch 8/10/50, V pulse/back/front porch 3/8/8, with two frame buffers and a bounce buffer option.
+- The reference ST7701 init sequence writes pixel-format register 0x3A with value 0x66 (RGB666), while its config header declares 16-bit RGB pixel/data widths. This is a material configuration mismatch to resolve deliberately; do not blindly copy either value. A 16-bit RGB565 framebuffer can still require a panel-side RGB666 serial configuration depending on the RGB bus wiring and driver conversion path.
+- TCA9554 EXIO8 behavior is not documented consistently across the inspected examples. Keep all expander outputs in a known safe state and verify buzzer/panel-enable behavior against the exact board revision before enabling any EXIO8 output.
+
+Reference source files inspected: `Display_ST7701.h/.cpp`, `TCA9554PWR.h/.cpp`, and `Touch_CST820.h/.cpp` in that repository. Treat their initialization/timing as a reference baseline, not as code already integrated into MotoNav.
+
+### Updated implementation sequence
+
+1. Extract a minimal board-only bring-up from the reference: I2C scan, TCA9554 safe initialization, ST7701 command bus/init, RGB panel creation, solid-color/full-screen test.
+2. Separately validate CST820 reset, I2C reads, coordinates, and IRQ/polling reliability.
+3. Only then adapt MotoNav's framebuffer flush and 480x480 canvas scaling.
+4. Keep the BLE/map/application logic untouched until the display/touch smoke test is stable.
