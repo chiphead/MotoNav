@@ -117,7 +117,12 @@ bool Arduino_SWSPI::begin(int32_t, int8_t)
     _misoPort = (PORTreg_t)portInputRegister(digitalPinToPort(_miso));
   }
 #elif defined(ESP32) && (CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32P4 || CONFIG_IDF_TARGET_ESP32C5)
-  _dcPinMask = digitalPinToBitMask(_dc);
+  // A missing DC pin selects 9-bit command/data mode. Do not ask the
+  // GPIO layer for a bit mask for GFX_NOT_DEFINED (-1).
+  if (_dc != GFX_NOT_DEFINED)
+  {
+    _dcPinMask = digitalPinToBitMask(_dc);
+  }
   if (_dc >= 32)
   {
     _dcPortSet = (PORTreg_t)GPIO_OUT1_W1TS_REG;
