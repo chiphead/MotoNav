@@ -173,9 +173,12 @@ bool Arduino_SWSPI::begin(int32_t, int8_t)
     _misoPort = (PORTreg_t)portInputRegister(digitalPinToPort(_miso));
   }
 #elif defined(ESP32)
-  _dcPinMask = digitalPinToBitMask(_dc);
-  _dcPortSet = (PORTreg_t)GPIO_OUT_W1TS_REG;
-  _dcPortClr = (PORTreg_t)GPIO_OUT_W1TC_REG;
+  if (_dc != GFX_NOT_DEFINED)
+  {
+    _dcPinMask = digitalPinToBitMask(_dc);
+    _dcPortSet = (PORTreg_t)GPIO_OUT_W1TS_REG;
+    _dcPortClr = (PORTreg_t)GPIO_OUT_W1TC_REG;
+  }
   if (_cs != GFX_NOT_DEFINED)
   {
     _csPinMask = digitalPinToBitMask(_cs);
