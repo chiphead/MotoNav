@@ -1,6 +1,6 @@
 # ESP32-S3-Touch-LCD-2.1B port status
 
-**Status: port in progress — not buildable or hardware-verified yet.**
+**Status: isolated board bring-up source exists; MotoNav target is not integrated, compile status unknown, and hardware is not verified.**
 
 Target: Waveshare ESP32-S3-Touch-LCD-2.1B (480x480 RGB LCD, ST7701 panel, CST820 capacitive touch, TCA9554 IO expander).
 
@@ -77,9 +77,10 @@ The BLE protocol, map rendering, media/HID behavior, and most application logic 
 
 - Repository source inspection: complete for the 1.85B panel constructor, touch initialization, and setup ordering.
 - 2.1B pin inventory: documented from the board specification; exact expander sequence and RGB panel timing/init still need verification against the official demo.
-- Firmware implementation: not yet started.
-- Arduino compile: not run.
+- Board-only source scaffold: present in `MotoNav/Board21BDisplay.h`, `MotoNav/Board21BTouch.h`, and `bringup/bringup.ino`.
+- Arduino compile: not run in the authoring environment; the user reports that the current branch does not compile. The first compiler diagnostic has not yet been provided, so no claim is made that the reported build failure is fixed.
 - Hardware validation: not run.
+- Main MotoNav integration: not started; existing 1.85B application remains the reference for shared application logic, not a 2.1B build target.
 
 
 ## Reference implementation audit (2026-11-01)
@@ -126,3 +127,17 @@ The official board documentation lists EXIO1=LCD reset, EXIO2=touch reset, EXIO3
 - CST820 runtime integration: not implemented.
 - Build target: intentionally not enabled.
 - Compile and physical board test: not run.
+
+
+## Build failure triage status (2026-11-01)
+
+The user reports that the current branch cannot compile. No compiler output is available yet, so the exact first failing translation unit and diagnostic remain unknown.
+
+Source-level checks performed while preparing the next build attempt:
+
+- Confirmed the vendored `Arduino_SWSPI::beginWrite()` and `endWrite()` methods are virtual, so the expander-CS subclass overrides are valid.
+- Confirmed the vendored `Arduino_ESP32RGBPanel` constructor argument order matches the current 2.1B factory call.
+- Guarded the undefined DC pin in both ESP32-S3 and legacy ESP32 fast-GPIO initialization paths in the vendored software-SPI implementation.
+- The RGB display and CST820 bring-up path remains uncompiled. The next required input to isolate any remaining compiler failure is the first actual Arduino CLI error, beginning at the first `error:` line and including the preceding file/line context.
+
+Do not proceed to main application integration until the isolated bring-up sketch compiles.
