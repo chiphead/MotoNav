@@ -83,3 +83,13 @@ The adapter previously passed the reference porch/pulse values in the wrong posi
 - VSYNC: polarity 0, front porch 3, pulse 8, back porch 8.
 
 This is a source-level correction based on the vendored API signature and recorded reference timing. It is not evidence of a working display; the pixel clock, sync polarity, RGB ordering and panel init still require compile and physical validation.
+
+
+## Follow-up low-level audit (2026-11-01)
+
+Two source-level issues were corrected after inspecting the exact vendored Arduino_GFX implementation:
+
+- `Arduino_SWSPI` now skips `digitalPinToBitMask()` when DC is `GFX_NOT_DEFINED`. This is required for the 9-bit command/data mode used by ST7701 and avoids asking the ESP32 GPIO layer to calculate a mask for pin `-1`. Both ESP32S3 and legacy ESP32 fast-pin paths are guarded.
+- The ST7701 pixel-format command was changed from `0x66` (18-bit RGB666) to `0x55` (16-bit RGB565), matching this board adapter's 5-bit red + 6-bit green + 5-bit blue wiring and the 16-bit Arduino_GFX framebuffer. The secondary reference's 0x66 setting conflicted with its own 16-bit pin declaration; this port follows the physical 16-wire RGB bus contract.
+
+These are source-level consistency fixes only. The isolated bring-up sketch still has not been compiled, and the display's actual color order/timing must be checked on the physical board.
