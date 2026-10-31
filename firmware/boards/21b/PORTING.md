@@ -104,3 +104,25 @@ Reference source files inspected: `Display_ST7701.h/.cpp`, `TCA9554PWR.h/.cpp`, 
 2. Separately validate CST820 reset, I2C reads, coordinates, and IRQ/polling reliability.
 3. Only then adapt MotoNav's framebuffer flush and 480x480 canvas scaling.
 4. Keep the BLE/map/application logic untouched until the display/touch smoke test is stable.
+
+
+## 2026-11-01 board pin contract added
+
+Added `firmware/boards/21b/MotoNav/pin_config.h` as a dedicated 2.1B pin inventory.
+
+- Includes the 480x480 geometry, RGB timing/data pins, ST7701 command pins, CST820 I2C/IRQ pins, and TCA9554 EXIO assignments.
+- Adds the documented microSD signals: GPIO42 data, GPIO2 clock, GPIO1 command, EXIO4 chip select.
+- Explicitly avoids carrying over the 1.75 ES8311/I2S pin definitions.
+- EXIO identifiers are documented as 1-based; raw TCA9554 register access must convert them to bit indices.
+- This is a hardware pin contract only. It is not yet wired to a display driver and must not be treated as a buildable board target.
+
+The official board documentation lists EXIO1=LCD reset, EXIO2=touch reset, EXIO3=LCD command CS, EXIO4=SD CS, EXIO5/6=IMU interrupts, EXIO7=RTC interrupt, and EXIO8=buzzer. Because EXIO8 is the buzzer control, any expander initialization must explicitly hold it inactive before configuring outputs; never write an unreviewed all-ones output mask.
+
+### Updated verification
+
+- 2.1B pin inventory: added to the board-specific source tree.
+- TCA9554 driver/startup: not implemented.
+- ST7701 RGB panel driver/init: not implemented.
+- CST820 runtime integration: not implemented.
+- Build target: intentionally not enabled.
+- Compile and physical board test: not run.
