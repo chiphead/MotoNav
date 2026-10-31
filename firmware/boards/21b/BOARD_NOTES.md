@@ -69,3 +69,17 @@ Compared the adapter against the repository's vendored Arduino_GFX API and a sep
 - RGB sync polarity is set to active-low explicitly. If the first hardware test shows a blank or unstable image, timing polarity/porches and the ST7701S sequence remain items to compare against the exact board revision; these settings have not been measured on the target device.
 
 The reference used for the board wiring is Waveshare's [ESP32-S3-Touch-LCD-2.1 wiki](https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-2.1). A separate implementation with the same 480x480 ST7701S/CST820/TCA9554 hardware is available at [murr2k/esp32-s3-touch-lcd-2.1](https://github.com/murr2k/esp32-s3-touch-lcd-2.1). Neither reference proves that this Arduino_GFX adapter compiles or runs unchanged.
+
+
+## RGB timing argument-order audit (2026-11-01)
+
+Compared `Board21BDisplay.h` with the exact constructor declaration in the repository-vendored `Arduino_ESP32RGBPanel.h`. The constructor order is:
+
+`hsync_polarity, hsync_front_porch, hsync_pulse_width, hsync_back_porch`, followed by the equivalent VSYNC fields.
+
+The adapter previously passed the reference porch/pulse values in the wrong positions. Corrected it to:
+
+- HSYNC: polarity 0, front porch 10, pulse 8, back porch 50.
+- VSYNC: polarity 0, front porch 3, pulse 8, back porch 8.
+
+This is a source-level correction based on the vendored API signature and recorded reference timing. It is not evidence of a working display; the pixel clock, sync polarity, RGB ordering and panel init still require compile and physical validation.
