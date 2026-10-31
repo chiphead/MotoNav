@@ -41,3 +41,42 @@ Expected key hardware blocks (verify against the current wiki/revision before co
 - Flashable release: not available
 
 This document intentionally does not claim that a working firmware port exists.
+
+
+## 2026-11-01 source inspection
+
+The existing 1.85B implementation is not a valid display-driver starting point for this board:
+
+- 1.85B constructs `Arduino_ESP32QSPI` and derives its panel from `Arduino_ST77916`.
+- 2.1B is a 480x480 ST7701 RGB-parallel panel. Its pixel bus is the RGB set below, with PCLK/DE/VSYNC/HSYNC timing signals. Do not carry over the QSPI bus, ST77916 init table, panel-ID probing, or QSPI clock preference.
+- The existing 1.85B touch path instantiates `TouchDrvCST816`. The 2.1B uses CST820; the driver class/API and reset/interrupt behavior must be checked against the exact Waveshare demo/library version before reuse.
+- The current 1.85B `setup()` initializes Wire and touch before `gfx->begin()`. On 2.1B, the TCA9554 expander must be brought up first if it controls LCD reset and touch reset. The exact EXIO mapping and expander polarity must be confirmed from the official 2.1B demo, not inferred from the 1.85B board.
+
+### 2.1B RGB and control pin inventory
+
+| Signal | GPIO / connection |
+|---|---:|
+| LCD backlight | GPIO6 |
+| LCD reset | TCA9554 EXIO1 |
+| LCD SDA / SCL / CS | GPIO1 / GPIO2 / TCA9554 EXIO3 |
+| RGB PCLK / DE / VSYNC / HSYNC | GPIO41 / GPIO40 / GPIO39 / GPIO38 |
+| RGB B1..B5 | GPIO5, 45, 48, 47, 21 |
+| RGB G0..G5 | GPIO14, 13, 12, 11, 10, 9 |
+| RGB R1..R5 | GPIO46, 3, 8, 18, 17 |
+| Touch SDA / SCL | GPIO15 / GPIO7 |
+| Touch interrupt | GPIO16 |
+| Touch reset | TCA9554 EXIO2 |
+
+These are a pin inventory, not yet a compilable Arduino_GFX constructor. Confirm the RGB bit ordering and ST7701 init sequence against Waveshare's current 2.1B demo before implementing the panel object.
+
+### Porting boundary
+
+The BLE protocol, map rendering, media/HID behavior, and most application logic should remain shared from the 1.85B lineage where practical. Board-specific code must be isolated behind a 2.1B display/touch/power initialization layer. Do not copy the 1.85B QSPI panel class into the 2.1B target and do not enable a build.ps1 target until the RGB panel and CST820 path compile together.
+
+### Current verification
+
+- Repository source inspection: complete for the 1.85B panel constructor, touch initialization, and setup ordering.
+- 2.1B pin inventory: documented from the board specification; exact expander sequence and RGB panel timing/init still need verification against the official demo.
+- Firmware implementation: not yet started.
+- Arduino compile: not run.
+- Hardware validation: not run.
